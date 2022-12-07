@@ -6,6 +6,7 @@ import { trpc } from "../utils/trpc";
 
 import "../styles/globals.css";
 import GlobalContextProvider from "../contexts/GlobalContext";
+import { Toaster } from "react-hot-toast";
 
 const MyApp: AppType<{ session: Session | null }> = ({
   Component,
@@ -14,6 +15,7 @@ const MyApp: AppType<{ session: Session | null }> = ({
   return (
     <SessionProvider session={session}>
       <GlobalContextProvider>
+        <Toaster />
         <Component {...pageProps} />
       </GlobalContextProvider>
     </SessionProvider>

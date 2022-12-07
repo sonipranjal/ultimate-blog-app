@@ -1,7 +1,8 @@
 import { TRPCError } from "@trpc/server";
 import { createApi } from "unsplash-js";
+import { querySchema } from "../../../components/UnsplashGallary";
 import { env } from "../../../env/server.mjs";
-import { querySchema } from "../../../pages/[slug]";
+
 import { protectedProcedure, router } from "../trpc";
 
 const unsplash = createApi({
@@ -16,6 +17,7 @@ export const unsplashRouter = router({
         const data = await unsplash.search.getPhotos({
           query,
           orderBy: "relevant",
+          orientation: "landscape",
         });
         return data.response;
       } catch (error) {

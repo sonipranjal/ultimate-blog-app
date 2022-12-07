@@ -80,10 +80,11 @@ model Follows {
 }
 
 model Post {
-  id          String @id @default(cuid())
-  title       String
-  description String
-  slug        String
+  id            String  @id @default(cuid())
+  title         String
+  description   String
+  slug          String
+  featuredImage String?
 
   html String @db.Text
   text String @db.Text

@@ -57,4 +57,29 @@ export const postRouter = router({
 
       return post;
     }),
+  updatePost: protectedProcedure
+    .input(
+      postSchema
+        .partial()
+        .and(
+          z
+            .object({ isPublished: z.boolean(), featuredImage: z.string() })
+            .partial()
+        )
+        .and(
+          z.object({
+            postId: z.string(),
+          })
+        )
+    )
+    .mutation(async ({ ctx: { prisma }, input: { postId, ...data } }) => {
+      await prisma.post.update({
+        where: {
+          id: postId,
+        },
+        data: {
+          ...data,
+        },
+      });
+    }),
 });
