@@ -57,7 +57,7 @@ model User {
   updatedAt     DateTime   @updatedAt
   Like          Like[]
   Bookmark      Bookmark[]
-  username      String?
+  username      String?    @unique
 }
 
 model VerificationToken {
@@ -81,7 +81,7 @@ model Follows {
 
 model Post {
   id            String  @id @default(cuid())
-  title         String
+  title         String  @unique
   description   String
   slug          String
   featuredImage String?
@@ -105,7 +105,7 @@ model Post {
 
 model Tag {
   id          String @id @default(cuid())
-  name        String
+  name        String @unique
   description String
   slug        String
   posts       Post[]

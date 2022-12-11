@@ -4,6 +4,7 @@ import { TfiSearch } from "react-icons/tfi";
 import { trpc } from "../../utils/trpc";
 import BlogItem from "../BlogItem";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import Tag from "../Tag";
 
 const MainSection = () => {
   const {
@@ -12,6 +13,8 @@ const MainSection = () => {
     isLoading,
     isError,
   } = trpc.post.getPosts.useQuery();
+
+  const { data: tags } = trpc.tag.getTags.useQuery();
 
   return (
     <section className="col-span-8 flex flex-col border-r border-gray-300 px-20">
@@ -31,14 +34,11 @@ const MainSection = () => {
         <div className="flex items-center space-x-2">
           <div className="whitespace-nowrap text-gray-700">My topics:</div>
           <div className="flex w-full items-center space-x-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <div
-                className="rounded-3xl bg-gray-200 px-5 py-3 text-sm text-black"
-                key={i}
-              >
-                {i}Design
-              </div>
-            ))}
+            {/* todo: if user logged in, show tags that interest user, otherwise shows most popular tags */}
+            {tags &&
+              tags
+                .slice(0, 4)
+                .map((tag) => <Tag name={tag.name} key={tag.id} />)}
           </div>
         </div>
       </div>
@@ -51,7 +51,7 @@ const MainSection = () => {
           </span>
         </div>
       </div>
-      <div className="relative grid h-full w-full grid-cols-1">
+      <div className="relative flex h-full w-full flex-col space-y-4">
         {isError && (
           <p className="p-4 text-sm text-gray-800">
             Something went wrong while fetching the blog posts!

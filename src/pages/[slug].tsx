@@ -43,10 +43,12 @@ const BlogPage = () => {
               )}
               <BiEdit
                 onClick={editBlogImage}
-                className="absolute top-5 left-5 cursor-pointer text-3xl text-gray-500 hover:text-black"
+                className="absolute top-5 left-5 z-10 cursor-pointer text-3xl text-gray-500 hover:text-black"
               />
-              <div className="absolute -bottom-4 w-full max-w-full break-words text-3xl font-bold text-gray-700">
-                {blog?.title}
+              <div className="absolute inset-0 flex h-full w-full max-w-full items-center justify-center break-words  text-center  font-bold text-white">
+                <span className="rounded-xl bg-black/40 p-4 text-4xl text-white">
+                  {blog?.title}
+                </span>
               </div>
             </div>
             <div className="border-l-4 border-black pl-4 text-sm text-gray-700">

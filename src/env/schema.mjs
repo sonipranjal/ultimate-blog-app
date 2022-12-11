@@ -23,6 +23,8 @@ export const serverSchema = z.object({
   GOOGLE_CLIENT_SECRET: z.string(),
   UNSPLASH_ACCESS_KEY: z.string(),
   UNSPLASH_SECRET: z.string(),
+  SUPABASE_URL: z.string(),
+  SUPABASE_SECRET_KEY: z.string(),
 });
 
 /**

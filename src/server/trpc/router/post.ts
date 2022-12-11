@@ -1,14 +1,35 @@
+import { TRPCError } from "@trpc/server";
 import slugify from "slugify";
 import { z } from "zod";
-import { postSchema } from "../../../pages";
+import { postSchema } from "../../../components/FormModal";
+
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const postRouter = router({
   createPost: protectedProcedure
-    .input(postSchema)
+    .input(
+      postSchema.and(
+        z.object({
+          tagIds: z.array(z.object({ id: z.string() })).optional(),
+        })
+      )
+    )
     .mutation(async ({ input, ctx }) => {
       const { prisma, session } = ctx;
       const { user } = session;
+
+      const existingPost = await prisma.post.findUnique({
+        where: {
+          title: input.title,
+        },
+      });
+
+      if (existingPost) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message: "post with this title already exists!",
+        });
+      }
 
       await prisma.post.create({
         data: {
@@ -19,6 +40,9 @@ export const postRouter = router({
           text: input.text,
           html: input.text,
           isPublished: false,
+          tags: {
+            connect: input.tagIds,
+          },
         },
       });
     }),
@@ -34,6 +58,7 @@ export const postRouter = router({
             username: true,
           },
         },
+        tags: true,
       },
       orderBy: {
         createdAt: "desc",
