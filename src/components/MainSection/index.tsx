@@ -5,14 +5,19 @@ import { trpc } from "../../utils/trpc";
 import BlogItem from "../BlogItem";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Tag from "../Tag";
+import { useSession } from "next-auth/react";
 
 const MainSection = () => {
+  const { data } = useSession();
+
   const {
     data: posts,
     isSuccess,
     isLoading,
     isError,
-  } = trpc.post.getPosts.useQuery();
+  } = trpc.post.getPosts.useQuery({
+    userId: data?.user?.id,
+  });
 
   const { data: tags } = trpc.tag.getTags.useQuery();
 

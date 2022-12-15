@@ -1,7 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
+import { BsBookmarkCheck, BsBookmarkPlus, BsThreeDots } from "react-icons/bs";
 import type { RouterOutputs } from "../../utils/trpc";
+import { trpc } from "../../utils/trpc";
 import Avatar from "../Avatar";
 import Tag from "../Tag";
 
@@ -15,7 +17,20 @@ const BlogItem = ({
   featuredImage,
   createdAt,
   tags,
+  id,
+  bookmarks,
+  likes,
 }: BlogItemProps) => {
+  const [isBookmarked, setIsBookmarked] = useState(bookmarks?.length > 0);
+
+  const bookmarkPost = trpc.post.bookmarkPost.useMutation({
+    onSuccess: () => setIsBookmarked(true),
+  });
+
+  const removeBookmark = trpc.post.removeBookmark.useMutation({
+    onSuccess: () => setIsBookmarked(false),
+  });
+
   return (
     <div className="flex h-max w-full flex-col border-b border-gray-300 py-6 last:border-none">
       <Link
@@ -36,6 +51,7 @@ const BlogItem = ({
               year: "numeric",
             })}
           </div>
+          {/* Todo: */}
           <div>The founder & teacher @ clubofcoders.com</div>
         </div>
       </Link>
@@ -47,8 +63,8 @@ const BlogItem = ({
             </div>
             <div className="text-sm text-gray-600">{description}</div>
           </div>
-          <div className="col-span-4 w-full max-w-sm p-4">
-            <div className="relative aspect-video transform rounded-xl bg-gray-400 shadow-xl transition-all duration-500 ease-in-out group-hover:scale-105 group-hover:shadow-2xl">
+          <div className="col-span-4 w-full max-w-sm">
+            <div className="relative aspect-video transform rounded-xl bg-gray-400 shadow-xl transition-all duration-300 ease-in-out group-hover:scale-105 group-hover:shadow-2xl">
               {featuredImage && (
                 <Image
                   src={featuredImage}
@@ -61,10 +77,31 @@ const BlogItem = ({
           </div>
         </div>
       </Link>
-      <div className="flex w-full items-center space-x-4">
-        {tags.map((tag) => (
-          <Tag key={tag.id} name={tag.name} />
-        ))}
+      <div className="flex w-full items-center justify-between space-x-4">
+        <div>
+          {tags.map((tag) => (
+            <Tag key={tag.id} name={tag.name} />
+          ))}
+        </div>
+        <div>
+          {(bookmarkPost.isLoading || removeBookmark.isLoading) && (
+            <BsThreeDots className="animate-pulse text-2xl text-indigo-600" />
+          )}
+          {!bookmarkPost.isLoading &&
+            !removeBookmark.isLoading &&
+            (isBookmarked ? (
+              <BsBookmarkCheck
+                fill="#000"
+                className="cursor-pointer text-2xl text-gray-900 hover:text-gray-700"
+                onClick={() => removeBookmark.mutate({ postId: id })}
+              />
+            ) : (
+              <BsBookmarkPlus
+                onClick={() => bookmarkPost.mutate({ postId: id })}
+                className="cursor-pointer text-2xl text-gray-900 hover:text-gray-700"
+              />
+            ))}
+        </div>
       </div>
     </div>
   );

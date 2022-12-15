@@ -18,6 +18,8 @@ const config = {
       "lh3.googleusercontent.com",
       "images.unsplash.com",
       "uhfiyrlkeagwxjggxljl.supabase.co",
+      "cloudflare-ipfs.com",
+      "source.unsplash.com",
     ],
   },
 };

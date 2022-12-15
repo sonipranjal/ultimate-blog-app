@@ -1,13 +1,21 @@
 import { useRouter } from "next/router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BiEdit } from "react-icons/bi";
 import MainLayout from "../Layouts/MainLayout";
 import { trpc } from "../utils/trpc";
 import UnsplashGallary from "../components/UnsplashGallary";
 import Image from "next/image";
+import { FcLike, FcLikePlaceholder } from "react-icons/fc";
+import { HiOutlineChatBubbleOvalLeft } from "react-icons/hi2";
+import { useSession } from "next-auth/react";
+import { BsThreeDots } from "react-icons/bs";
+import AnimatedSidebar from "../components/AnimatedSidebar";
+import Avatar from "../components/Avatar";
 
 const BlogPage = () => {
   const { query } = useRouter();
+  const utils = trpc.useContext();
+  const { data: sessionData } = useSession();
 
   const {
     data: blog,
@@ -15,11 +23,48 @@ const BlogPage = () => {
     isError,
     isSuccess,
   } = trpc.post.getPost.useQuery(
-    { slug: query.slug as string },
+    { slug: query.slug as string, userId: sessionData?.user?.id },
     {
       enabled: !!query.slug,
     }
   );
+
+  const [{ isLiked, likesCount }, setLikesObject] = useState({
+    isLiked: Boolean(blog?.likes && blog.likes.length > 0),
+    likesCount: blog?._count.likes ?? 0,
+  });
+
+  useEffect(() => {
+    setLikesObject({
+      isLiked: Boolean(blog?.likes && blog.likes.length > 0),
+      likesCount: blog?._count.likes ?? 0,
+    });
+  }, [blog]);
+
+  const likePost = trpc.post.likePost.useMutation({
+    onSuccess: () => {
+      setLikesObject(({ likesCount }) => ({
+        isLiked: true,
+        likesCount: likesCount + 1,
+      }));
+      utils.post.getPost.invalidate({
+        slug: query.slug as string,
+        userId: sessionData?.user?.id,
+      });
+    },
+  });
+  const dislikePost = trpc.post.dislikePost.useMutation({
+    onSuccess: () => {
+      setLikesObject(({ likesCount }) => ({
+        isLiked: false,
+        likesCount: likesCount - 1,
+      }));
+      utils.post.getPost.invalidate({
+        slug: query.slug as string,
+        userId: sessionData?.user?.id,
+      });
+    },
+  });
 
   const [openEditImageModal, setOpenEditImageModal] = useState(false);
 
@@ -27,9 +72,46 @@ const BlogPage = () => {
     setOpenEditImageModal(true);
   };
 
+  const [openCommentSidebar, setOpenCommentSidebar] = useState(false);
+
   return (
     <MainLayout>
-      <div className="col-span-full mx-auto flex w-full max-w-screen-xl flex-col justify-center p-6">
+      <div className="relative col-span-full mx-auto flex w-full max-w-screen-xl flex-col justify-center p-6">
+        <div className="fixed bottom-5 right-0 left-0 flex w-full items-center justify-center">
+          {blog && (
+            <div className="flex items-center space-x-4 rounded-full border border-gray-300 bg-white px-5 py-2.5 text-gray-600 shadow-xl  transition-all duration-300 hover:border-gray-500 hover:text-gray-900">
+              <div className="flex items-center space-x-1 border-r border-gray-300 pr-4">
+                {(likePost.isLoading || dislikePost.isLoading) && (
+                  <BsThreeDots className="animate-pulse text-2xl text-indigo-600" />
+                )}
+
+                {!likePost.isLoading &&
+                  !dislikePost.isLoading &&
+                  (isLiked ? (
+                    <FcLike
+                      className="cursor-pointer text-2xl"
+                      onClick={() => dislikePost.mutate({ postId: blog.id })}
+                    />
+                  ) : (
+                    <FcLikePlaceholder
+                      className="cursor-pointer text-2xl"
+                      onClick={() => likePost.mutate({ postId: blog.id })}
+                    />
+                  ))}
+
+                <div className="text-xs">{likesCount}</div>
+              </div>
+              <div className="flex items-center space-x-0.5">
+                <HiOutlineChatBubbleOvalLeft
+                  strokeWidth={1}
+                  className="cursor-pointer text-2xl"
+                  onClick={() => setOpenCommentSidebar(true)}
+                />
+                <div className="text-xs">{blog?._count.comments}</div>
+              </div>
+            </div>
+          )}
+        </div>
         {isSuccess && (
           <div className="flex flex-col justify-center space-y-4">
             <div className="relative mb-10 h-[60vh] w-full rounded-3xl bg-gray-300 p-28 shadow-xl">
@@ -65,6 +147,59 @@ const BlogPage = () => {
           currentPost={blog}
         />
       )}
+
+      <AnimatedSidebar
+        side="right"
+        toggleSidebar={openCommentSidebar}
+        onClose={() => setOpenCommentSidebar(false)}
+      >
+        <div className="flex h-full w-full justify-end">
+          <div className="flex h-screen max-h-screen w-full max-w-md flex-col rounded-xl bg-white p-10">
+            <h2 className="text-2xl text-black">
+              Responses ({blog?._count.comments})
+            </h2>
+            <div className="my-4">
+              <input
+                type="text"
+                name="comment"
+                id="comment"
+                placeholder="What are your thoughts?"
+                className="w-full rounded-lg border p-4 shadow-md outline-none placeholder:text-sm focus:border-gray-600"
+              />
+            </div>
+            <div className="mt-10 flex flex-col space-y-8 overflow-y-auto">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex flex-col justify-center space-y-3 border-b border-b-gray-200 pb-8 last:border-none"
+                >
+                  <div className="flex items-center space-x-2">
+                    <div className="h-10 w-10">
+                      <Avatar size="full" />
+                    </div>
+                    <div>
+                      <p className="text-base text-gray-900">Name</p>
+                      <p className="text-xs text-gray-500">
+                        about 24 hours ago
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-900">
+                      Lorem ipsum dolor sit amet, consectetur adipisicing elit.
+                      Aut labore at, minus ab culpa quas. Quae minima saepe quas
+                      nulla quis aliquam, explicabo architecto, labore, animi
+                      aliquid modi! Voluptas, ullam molestias. Est dicta
+                      aspernatur commodi, voluptate molestiae vitae. Quasi,
+                      debitis.
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </AnimatedSidebar>
     </MainLayout>
   );
 };

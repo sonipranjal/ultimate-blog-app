@@ -1,7 +1,7 @@
 import { TRPCError } from "@trpc/server";
 import slugify from "slugify";
 import { tagSchema } from "../../../components/TagModal";
-import { protectedProcedure, router } from "../trpc";
+import { protectedProcedure, publicProcedure, router } from "../trpc";
 
 export const tagRouter = router({
   createTag: protectedProcedure
@@ -30,7 +30,7 @@ export const tagRouter = router({
         },
       });
     }),
-  getTags: protectedProcedure.query(async ({ ctx: { prisma } }) => {
+  getTags: publicProcedure.query(async ({ ctx: { prisma } }) => {
     return await prisma.tag.findMany();
   }),
 });
