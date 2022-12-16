@@ -5,7 +5,7 @@ type AvatarSize = "s" | "m" | "l" | "full";
 
 type AvatarProps = {
   size: AvatarSize;
-  url?: string;
+  url?: string | null;
   alt?: string;
 };
 

@@ -18,7 +18,7 @@ interface IFormInputs {
 
 export const postSchema = z.object({
   title: z.string().min(20).max(40),
-  description: z.string().min(100).max(200),
+  description: z.string().min(95).max(200),
   text: z.string().min(80),
 });
 
@@ -47,7 +47,7 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
 
   const utils = trpc.useContext();
 
-  const { mutate } = trpc.post.createPost.useMutation({
+  const createPost = trpc.post.createPost.useMutation({
     onSuccess: () => {
       utils.post.getPosts.invalidate();
       toast.success("yey 🥳, post created successfully!");
@@ -69,7 +69,7 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
     <Modal isOpen={openModal} onClose={closeModal}>
       <form
         onSubmit={handleSubmit((data) =>
-          mutate({
+          createPost.mutate({
             ...data,
             tagIds: selectedTags.map((tag) => ({ id: tag.id })),
           })
@@ -92,6 +92,7 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
               <button
                 type="button"
                 onClick={() => setOpenTagModal(true)}
+                disabled={createPost.isLoading}
                 className="flex items-center space-x-2 rounded-lg px-4 py-3 ring-1 ring-gray-400"
               >
                 New Tag
@@ -116,6 +117,7 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
           {...register("title")}
           placeholder="title"
           className="w-full rounded-lg border p-4 shadow outline-none focus:border-gray-600"
+          disabled={createPost.isLoading}
         />
         <ErrorMessage errorMessage={errors.title?.message} />
         <input
@@ -123,6 +125,7 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
           {...register("description")}
           placeholder="short description"
           className="w-full rounded-lg border p-4 shadow outline-none focus:border-gray-600"
+          disabled={createPost.isLoading}
         />
         <ErrorMessage errorMessage={errors.description?.message} />
         <textarea
@@ -130,15 +133,17 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
           rows={10}
           className="w-full rounded-lg border p-4 shadow outline-none focus:border-gray-600"
           placeholder="write your text here..."
+          disabled={createPost.isLoading}
           {...register("text")}
         />
         <ErrorMessage errorMessage={errors.text?.message} />
         <div className="flex justify-end">
           <button
             type={"submit"}
+            disabled={createPost.isLoading}
             className="flex items-center space-x-2 rounded-lg px-4 py-2 ring-1 ring-gray-400"
           >
-            Create
+            {createPost.isLoading ? "Loading..." : "Create"}
           </button>
         </div>
       </form>

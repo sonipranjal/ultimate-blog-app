@@ -1,7 +1,16 @@
+import dayjs from "dayjs";
+import Image from "next/image";
+import { useRouter } from "next/router";
 import React from "react";
 import { IoReader } from "react-icons/io5";
+import { trpc } from "../../utils/trpc";
+import Avatar from "../Avatar";
 
 const Sidebar = () => {
+  const readingList = trpc.user.getUserReadingList.useQuery();
+
+  const router = useRouter();
+
   return (
     <section className="col-span-4 flex flex-col items-center space-y-8 p-10">
       <div className="">
@@ -54,29 +63,45 @@ const Sidebar = () => {
       <div className="flex w-full flex-col space-y-6">
         <div className="font-bold">My reading list</div>
         <div className="flex flex-col space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="grid grid-cols-10 gap-4">
-              <div className="col-span-4 w-full max-w-xs">
-                <div className="aspect-square rounded-xl bg-gray-400"></div>
+          {readingList.data &&
+            readingList.data.map((blog) => (
+              <div
+                key={blog.id}
+                className="group grid cursor-pointer grid-cols-10 gap-4"
+                onClick={() => router.push(`/${blog.post.slug}`)}
+              >
+                <div className="col-span-4 w-full max-w-xs">
+                  <div className="relative aspect-square rounded-xl bg-gray-400">
+                    {blog.post.featuredImage && (
+                      <Image
+                        src={blog.post.featuredImage}
+                        fill
+                        className="rounded-xl"
+                        alt={blog.post.title}
+                      />
+                    )}
+                  </div>
+                </div>
+                <div className="col-span-6 flex flex-col justify-around">
+                  <div className="text-base font-bold text-gray-900 decoration-indigo-600 group-hover:underline">
+                    {blog.post.title}
+                  </div>
+                  <div className="text-sm">
+                    {blog.post.description.slice(0, 90)}...
+                  </div>
+                  <div className="flex items-center space-x-2 text-xs">
+                    <div className="h-8 w-8 rounded-full bg-gray-400">
+                      <Avatar size="full" url={blog.post.author.image} />
+                    </div>
+                    <div>{blog.post.author.name}</div>
+                    <div>&#x2022;</div>
+                    <div>
+                      {dayjs(blog.post.createdAt).format("MMM D, YYYY")}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="col-span-6 flex flex-col justify-around">
-                <div className="text-base font-bold text-gray-900">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                  Consequuntur.
-                </div>
-                <div className="text-sm">
-                  Lorem ipsum, dolor sit amet consectetur adipisicing elit.
-                  Officiis deserunt deleniti, quibusdam sint assumenda vel
-                </div>
-                <div className="flex items-center space-x-2 text-xs">
-                  <div className="h-8 w-8 rounded-full bg-gray-400"></div>
-                  <div>John snow</div>
-                  <div>&#x2022;</div>
-                  <div>Nov 20, 2022</div>
-                </div>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
     </section>

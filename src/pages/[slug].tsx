@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { BsThreeDots } from "react-icons/bs";
 import AnimatedSidebar from "../components/AnimatedSidebar";
 import Avatar from "../components/Avatar";
+import CommentsSidebar from "../components/CommetsSidebar";
 
 const BlogPage = () => {
   const { query } = useRouter();
@@ -148,58 +149,15 @@ const BlogPage = () => {
         />
       )}
 
-      <AnimatedSidebar
-        side="right"
-        toggleSidebar={openCommentSidebar}
-        onClose={() => setOpenCommentSidebar(false)}
-      >
-        <div className="flex h-full w-full justify-end">
-          <div className="flex h-screen max-h-screen w-full max-w-md flex-col rounded-xl bg-white p-10">
-            <h2 className="text-2xl text-black">
-              Responses ({blog?._count.comments})
-            </h2>
-            <div className="my-4">
-              <input
-                type="text"
-                name="comment"
-                id="comment"
-                placeholder="What are your thoughts?"
-                className="w-full rounded-lg border p-4 shadow-md outline-none placeholder:text-sm focus:border-gray-600"
-              />
-            </div>
-            <div className="mt-10 flex flex-col space-y-8 overflow-y-auto">
-              {Array.from({ length: 10 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex flex-col justify-center space-y-3 border-b border-b-gray-200 pb-8 last:border-none"
-                >
-                  <div className="flex items-center space-x-2">
-                    <div className="h-10 w-10">
-                      <Avatar size="full" />
-                    </div>
-                    <div>
-                      <p className="text-base text-gray-900">Name</p>
-                      <p className="text-xs text-gray-500">
-                        about 24 hours ago
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-900">
-                      Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-                      Aut labore at, minus ab culpa quas. Quae minima saepe quas
-                      nulla quis aliquam, explicabo architecto, labore, animi
-                      aliquid modi! Voluptas, ullam molestias. Est dicta
-                      aspernatur commodi, voluptate molestiae vitae. Quasi,
-                      debitis.
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </AnimatedSidebar>
+      {blog && (
+        <CommentsSidebar
+          postId={blog.id}
+          openCommentSidebar={openCommentSidebar}
+          onClose={() => setOpenCommentSidebar(false)}
+          commentsCounts={blog?._count.comments ?? 0}
+          slug={blog.slug}
+        />
+      )}
     </MainLayout>
   );
 };

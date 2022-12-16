@@ -112,7 +112,88 @@ export const userRouter = router({
               posts: true,
             },
           },
+          id: true,
         },
       });
+    }),
+  getUserReadingList: protectedProcedure.query(
+    async ({ ctx: { prisma, session } }) => {
+      const userReadingList = await prisma.bookmark.findMany({
+        where: {
+          userId: session.user.id,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 4,
+        include: {
+          post: {
+            select: {
+              featuredImage: true,
+              title: true,
+              description: true,
+              slug: true,
+              author: {
+                select: {
+                  image: true,
+                  name: true,
+                },
+              },
+              createdAt: true,
+            },
+          },
+        },
+      });
+
+      return userReadingList;
+    }
+  ),
+  getUserPosts: publicProcedure
+    .input(z.object({ userId: z.string() }))
+    .query(async ({ input: { userId }, ctx: { prisma } }) => {
+      const userPosts = await prisma.post.findMany({
+        where: {
+          authorId: userId,
+        },
+        select: {
+          title: true,
+          description: true,
+          slug: true,
+          featuredImage: true,
+          createdAt: true,
+          tags: true,
+          id: true,
+          bookmarks: userId
+            ? {
+                where: {
+                  userId,
+                },
+              }
+            : false,
+          author: {
+            select: {
+              name: true,
+              image: true,
+              username: true,
+            },
+          },
+          likes: userId
+            ? {
+                where: {
+                  userId,
+                },
+              }
+            : false,
+          _count: {
+            select: {
+              bookmarks: true,
+              comments: true,
+              likes: true,
+            },
+          },
+        },
+      });
+
+      return userPosts;
     }),
 });

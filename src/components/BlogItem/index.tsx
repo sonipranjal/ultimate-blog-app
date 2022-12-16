@@ -56,9 +56,9 @@ const BlogItem = ({
         </div>
       </Link>
       <Link href={`/${slug}`}>
-        <div className="group grid grid-cols-12 place-items-center">
-          <div className="col-span-8 flex flex-col space-y-4">
-            <div className="text-xl font-extrabold group-hover:underline">
+        <div className="group grid grid-cols-12">
+          <div className="col-span-8 flex flex-col justify-center space-y-4">
+            <div className="text-xl font-extrabold decoration-indigo-600 group-hover:underline">
               {title}
             </div>
             <div className="text-sm text-gray-600">{description}</div>
@@ -78,7 +78,7 @@ const BlogItem = ({
         </div>
       </Link>
       <div className="flex w-full items-center justify-between space-x-4">
-        <div>
+        <div className="flex flex-row flex-wrap space-x-2">
           {tags.map((tag) => (
             <Tag key={tag.id} name={tag.name} />
           ))}
@@ -91,8 +91,7 @@ const BlogItem = ({
             !removeBookmark.isLoading &&
             (isBookmarked ? (
               <BsBookmarkCheck
-                fill="#000"
-                className="cursor-pointer text-2xl text-gray-900 hover:text-gray-700"
+                className="cursor-pointer text-2xl text-indigo-700 hover:text-gray-700"
                 onClick={() => removeBookmark.mutate({ postId: id })}
               />
             ) : (

@@ -1,4 +1,3 @@
-import { useSession } from "next-auth/react";
 import React, { useState } from "react";
 import Avatar from "../../components/Avatar";
 import MainLayout from "../../Layouts/MainLayout";
@@ -9,6 +8,7 @@ import { trpc } from "../../utils/trpc";
 import { BiEdit } from "react-icons/bi";
 import { toast } from "react-hot-toast";
 import { useRouter } from "next/router";
+import { env } from "../../env/client.mjs";
 
 const UserProfilePage = () => {
   const { query } = useRouter();
@@ -27,7 +27,14 @@ const UserProfilePage = () => {
     isSuccess,
     isLoading,
     isError,
-  } = trpc.post.getPosts.useQuery();
+  } = trpc.user.getUserPosts.useQuery(
+    {
+      userId: userProfile?.id as string,
+    },
+    {
+      enabled: !!userProfile?.id,
+    }
+  );
 
   const { mutate: uploadAvatarToServer, isLoading: isImageUploading } =
     trpc.user.uploadAvatar.useMutation({
@@ -108,15 +115,29 @@ const UserProfilePage = () => {
             <div className="text-xl text-gray-500">
               @{userProfile?.username}
             </div>
-            <div className="text-base text-gray-500">5 posts</div>
-            <div>
-              <button className="flex transform items-center space-x-2  rounded-lg border border-gray-500 px-4 py-2 text-gray-500 transition-all duration-300 hover:border-gray-900 hover:text-gray-900 active:scale-95">
-                <div>
-                  <SlShareAlt />
-                </div>
-                <div className="text-sm">Share Profile</div>
-              </button>
-            </div>
+            {posts && (
+              <div className="text-base text-gray-500">
+                {posts?.length} posts
+              </div>
+            )}
+            {userProfile && (
+              <div>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(
+                      `${env.NEXT_PUBLIC_CLIENT_URL}/u/${userProfile.username}`
+                    );
+                    toast.success("copied 🥳");
+                  }}
+                  className="flex transform items-center space-x-2  rounded-lg border border-gray-500 px-4 py-2 text-gray-500 transition-all duration-300 hover:border-gray-900 hover:text-gray-900 active:scale-95"
+                >
+                  <div>
+                    <SlShareAlt />
+                  </div>
+                  <div className="text-sm">Share Profile</div>
+                </button>
+              </div>
+            )}
           </div>
         </div>
         <div></div>
