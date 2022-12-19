@@ -55,8 +55,8 @@ model User {
   comments      Comment[]
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
-  Like          Like[]
-  Bookmark      Bookmark[]
+  likes         Like[]
+  bookmarks     Bookmark[]
   username      String?    @unique
 }
 
@@ -123,11 +123,12 @@ model Comment {
 }
 
 model Like {
-  id     String @id @default(cuid())
-  user   User   @relation(fields: [userId], references: [id])
-  userId String
-  post   Post   @relation(fields: [postId], references: [id])
-  postId String
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+  createdAt DateTime @default(now())
 
   @@unique([userId, postId])
 }

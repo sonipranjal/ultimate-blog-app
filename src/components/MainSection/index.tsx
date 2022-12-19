@@ -6,18 +6,19 @@ import BlogItem from "../BlogItem";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Tag from "../Tag";
 import { useSession } from "next-auth/react";
+import InfiniteScroll from "react-infinite-scroll-component";
 
 const MainSection = () => {
   const { data } = useSession();
 
-  const {
-    data: posts,
-    isSuccess,
-    isLoading,
-    isError,
-  } = trpc.post.getPosts.useQuery({
-    userId: data?.user?.id,
-  });
+  const posts = trpc.post.getPosts.useInfiniteQuery(
+    {
+      userId: data?.user?.id,
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    }
+  );
 
   const { data: tags } = trpc.tag.getTags.useQuery();
 
@@ -57,13 +58,13 @@ const MainSection = () => {
         </div>
       </div>
       <div className="relative flex h-full w-full flex-col space-y-4">
-        {isError && (
+        {posts.isError && (
           <p className="p-4 text-sm text-gray-800">
             Something went wrong while fetching the blog posts!
           </p>
         )}
 
-        {isLoading && (
+        {posts.isLoading && (
           <div className="absolute inset-0 m-5 flex animate-pulse items-center justify-center rounded-xl bg-gradient-to-tr from-slate-200 via-gray-300 to-neutral-400  p-4">
             <AiOutlineLoading3Quarters
               className="animate-spin text-black"
@@ -71,7 +72,25 @@ const MainSection = () => {
             />
           </div>
         )}
-        {isSuccess && posts.map((post, i) => <BlogItem key={i} {...post} />)}
+
+        <InfiniteScroll
+          dataLength={
+            posts.data?.pages.flatMap((page) => page.posts).length ?? 0
+          } //This is important field to render the next data
+          next={posts.fetchNextPage}
+          hasMore={Boolean(posts.hasNextPage)}
+          loader={<h4>Loading...</h4>}
+          endMessage={
+            <p className="text-center font-bold">
+              <b>Yay! You have seen it all</b>
+            </p>
+          }
+        >
+          {posts.isSuccess &&
+            posts.data.pages
+              .flatMap((page) => page.posts)
+              .map((post, i) => <BlogItem key={i} {...post} />)}
+        </InfiniteScroll>
       </div>
     </section>
   );

@@ -24,7 +24,7 @@ async function main() {
     for await (const iterator of postsFakeArray) {
       await prisma.post.create({
         data: {
-          title: faker.lorem.lines(1),
+          title: faker.random.words(10),
           description: faker.lorem.lines(4),
           text: faker.lorem.paragraphs(5),
           html: faker.lorem.paragraphs(5),
@@ -38,7 +38,7 @@ async function main() {
           tags: {
             connectOrCreate: {
               create: {
-                name: faker.random.word(),
+                name: faker.random.words() + faker.random.word(),
                 description: faker.lorem.paragraph(1),
                 slug: faker.lorem.slug(),
               },

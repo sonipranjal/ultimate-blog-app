@@ -1,6 +1,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useContext, useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useContext, useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
 import { z } from "zod";
 import { GlobalContext } from "../../contexts/GlobalContext";
@@ -9,6 +9,12 @@ import AutoComplete, { type Option } from "../ComboBox/MultiSelectAutoComplete";
 import Modal from "../Modal";
 import { FaTimes } from "react-icons/fa";
 import Tag from "../Tag";
+import dynamic from "next/dynamic";
+
+const ReactQuill = dynamic(() => import("react-quill"), {
+  ssr: false,
+});
+import "react-quill/dist/quill.snow.css";
 
 interface IFormInputs {
   title: string;
@@ -41,6 +47,8 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
     handleSubmit,
     formState: { errors },
     reset,
+    control,
+    getValues,
   } = useForm<IFormInputs>({
     resolver: zodResolver(postSchema),
   });
@@ -76,11 +84,11 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
         )}
         className="grid grid-cols-1 gap-y-2"
       >
-        {tags && (
-          <div className="flex items-center">
+        <div className="flex items-center">
+          {tags && tags.length > 0 && (
             <div className="mr-4 flex-1">
               <AutoComplete
-                options={tags?.map((tag) => ({
+                options={tags.map((tag) => ({
                   label: tag.name,
                   id: tag.id,
                 }))}
@@ -88,18 +96,18 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
                 setSelectedOptions={setSelectedTags}
               />
             </div>
-            <div>
-              <button
-                type="button"
-                onClick={() => setOpenTagModal(true)}
-                disabled={createPost.isLoading}
-                className="flex items-center space-x-2 rounded-lg px-4 py-3 ring-1 ring-gray-400"
-              >
-                New Tag
-              </button>
-            </div>
+          )}
+          <div>
+            <button
+              type="button"
+              onClick={() => setOpenTagModal(true)}
+              disabled={createPost.isLoading}
+              className="flex items-center space-x-2 rounded-lg px-4 py-3 ring-1 ring-gray-400"
+            >
+              New Tag
+            </button>
           </div>
-        )}
+        </div>
         <div className="flex w-full flex-wrap space-x-2">
           {selectedTags.map((tag) => (
             <Tag
@@ -128,13 +136,29 @@ const FormModal = ({ openModal, closeModal }: FormModalProps) => {
           disabled={createPost.isLoading}
         />
         <ErrorMessage errorMessage={errors.description?.message} />
-        <textarea
-          cols={30}
-          rows={10}
-          className="w-full rounded-lg border p-4 shadow outline-none focus:border-gray-600"
-          placeholder="write your text here..."
-          disabled={createPost.isLoading}
-          {...register("text")}
+        <Controller
+          name="text"
+          control={control}
+          render={({ field }) => (
+            <div className="relative my-4 h-full">
+              <div
+                className="mt-10 h-48 overflow-y-auto"
+                id="rich-text-editor-container"
+              >
+                <ReactQuill
+                  {...field}
+                  placeholder={"Write Description"}
+                  onChange={(text) => {
+                    field.onChange(text);
+                  }}
+                  theme="snow"
+                  className="h-full min-h-full"
+                  id="editor"
+                  scrollingContainer={"#rich-text-editor-container"}
+                />
+              </div>
+            </div>
+          )}
         />
         <ErrorMessage errorMessage={errors.text?.message} />
         <div className="flex justify-end">

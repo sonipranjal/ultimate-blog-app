@@ -9,6 +9,8 @@ import Avatar from "../Avatar";
 const Sidebar = () => {
   const readingList = trpc.user.getUserReadingList.useQuery();
 
+  const userSuggestions = trpc.suggestions.getSuggestions.useQuery();
+
   const router = useRouter();
 
   return (
@@ -39,25 +41,28 @@ const Sidebar = () => {
       <div className="flex w-full flex-col space-y-6">
         <div className="font-bold">People you might be interested</div>
         <div className="flex w-full flex-col space-y-4">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div className="grid w-full grid-cols-12 gap-2" key={i}>
-              <div className="col-span-2">
-                <div className="h-12 w-12 rounded-full bg-gray-400"></div>
-              </div>
-              <div className="col-span-7 flex flex-col">
-                <div className="text-sm font-bold">John Doe</div>
-                <div className="text-xs font-normal">
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                  Illo, ut.
+          {userSuggestions &&
+            userSuggestions.data?.map((user) => (
+              <div className="grid w-full grid-cols-12 gap-2" key={user.id}>
+                <div className="col-span-2">
+                  <div className="h-12 w-12 rounded-full bg-gray-400">
+                    <Avatar size="full" url={user.image} />
+                  </div>
+                </div>
+                <div className="col-span-7 flex flex-col">
+                  <div className="text-sm font-bold">{user.name}</div>
+                  <div className="text-xs font-normal">
+                    Lorem, ipsum dolor sit amet consectetur adipisicing elit.
+                    Illo, ut.
+                  </div>
+                </div>
+                <div className="col-span-3">
+                  <button className="flex items-center space-x-2 rounded-lg px-4 py-2 ring-1 ring-gray-400">
+                    Follow
+                  </button>
                 </div>
               </div>
-              <div className="col-span-3">
-                <button className="flex items-center space-x-2 rounded-lg px-4 py-2 ring-1 ring-gray-400">
-                  Follow
-                </button>
-              </div>
-            </div>
-          ))}
+            ))}
         </div>
       </div>
       <div className="flex w-full flex-col space-y-6">

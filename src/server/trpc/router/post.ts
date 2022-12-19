@@ -5,6 +5,8 @@ import { postSchema } from "../../../components/FormModal";
 
 import { protectedProcedure, publicProcedure, router } from "../trpc";
 
+const LIMIT = 10;
+
 export const postRouter = router({
   createPost: protectedProcedure
     .input(
@@ -50,9 +52,10 @@ export const postRouter = router({
     .input(
       z.object({
         userId: z.string().optional(),
+        cursor: z.string().nullish(),
       })
     )
-    .query(async ({ ctx, input: { userId } }) => {
+    .query(async ({ ctx, input: { userId, cursor } }) => {
       const { prisma } = ctx;
 
       const posts = await prisma.post.findMany({
@@ -96,9 +99,17 @@ export const postRouter = router({
         orderBy: {
           createdAt: "desc",
         },
+        take: LIMIT + 1,
+        cursor: cursor ? { id: cursor } : undefined,
       });
 
-      return posts;
+      let nextCursor: typeof cursor | undefined = undefined;
+      if (posts.length > LIMIT) {
+        const nextItem = posts.pop();
+        if (nextItem) nextCursor = nextItem.id;
+      }
+
+      return { posts, nextCursor: nextCursor };
     }),
   getPost: publicProcedure
     .input(

@@ -9,9 +9,8 @@ import { FcLike, FcLikePlaceholder } from "react-icons/fc";
 import { HiOutlineChatBubbleOvalLeft } from "react-icons/hi2";
 import { useSession } from "next-auth/react";
 import { BsThreeDots } from "react-icons/bs";
-import AnimatedSidebar from "../components/AnimatedSidebar";
-import Avatar from "../components/Avatar";
 import CommentsSidebar from "../components/CommetsSidebar";
+import { Interweave } from "interweave";
 
 const BlogPage = () => {
   const { query } = useRouter();
@@ -137,7 +136,9 @@ const BlogPage = () => {
             <div className="border-l-4 border-black pl-4 text-sm text-gray-700">
               {blog?.description}
             </div>
-            <div className="text-lg text-gray-700">{blog?.text}</div>
+            <div className="list-disc text-lg text-gray-700">
+              <Interweave content={blog?.text} />
+            </div>
           </div>
         )}
       </div>
