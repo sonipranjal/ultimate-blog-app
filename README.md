@@ -1,3 +1,5 @@
+This repo is part of this course: https://www.udemy.com/course/learn-trpc-nextjs-prisma/?couponCode=3717DD73DB59AE023D39
+
 # Create T3 App
 
 This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
