@@ -1,4 +1,4 @@
-This repo is part of this course: https://www.udemy.com/course/learn-trpc-nextjs-prisma/?couponCode=3717DD73DB59AE023D39
+This repo is part of this course: https://www.clubofcoders.com/learn/Learn-tRPC-NextJs-and-Prisma-by-building-an-ultimate-blog-app
 
 # Create T3 App
 
